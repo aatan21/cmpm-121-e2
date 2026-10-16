@@ -17,6 +17,12 @@ type ShiftResults = {
   supplyBalance: number;
 };
 
+type SupplyDisplayRow = {
+  label: string;
+  value: number;
+  color: string;
+};
+
 // Calculate supply production, consumption, and balance
 function calculateSupplies(assignedCrew: number): ShiftResults {
   const supplyProduction = assignedCrew * 3;
@@ -36,7 +42,7 @@ function calculateSupplies(assignedCrew: number): ShiftResults {
 function drawAllocation(results: ShiftResults) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  for (let i = 0; i < totalCrew; i++) {
+  for (let i = 0; i < results.totalCrew; i++) {
     ctx.fillStyle = i < results.assignedSupplyCrew ? "#27766b" : "#c9d2c9";
     ctx.fillRect(18 + i * 45, 16, 36, 36);
     ctx.fillStyle = i < results.assignedSupplyCrew ? "#ffffff" : "#233e43";
@@ -52,14 +58,29 @@ function drawAllocation(results: ShiftResults) {
     76,
   );
 
-  ctx.fillText(`Production: ${results.supplyProduction}`, 18, 102);
-  ctx.fillStyle = "#27766b";
-  ctx.fillRect(18, 110, results.supplyProduction * 14, 20);
+  const displayRows: SupplyDisplayRow[] = [
+    {
+      label: "Production",
+      value: results.supplyProduction,
+      color: "#27766b",
+    },
+    {
+      label: "Consumption",
+      value: results.supplyConsumption,
+      color: "#a44d23",
+    },
+  ];
 
-  ctx.fillStyle = "#233e43";
-  ctx.fillText(`Consumption: ${results.supplyConsumption}`, 18, 154);
-  ctx.fillStyle = "#a44d23";
-  ctx.fillRect(18, 162, results.supplyConsumption * 14, 20);
+  displayRows.forEach((row, index) => {
+    const labelY = 102 + index * 52;
+    const barY = labelY + 8;
+
+    ctx.fillStyle = "#233e43";
+    ctx.fillText(`${row.label}: ${row.value}`, 18, labelY);
+
+    ctx.fillStyle = row.color;
+    ctx.fillRect(18, barY, row.value * 14, 20);
+  });
 }
 
 // Update the shift report
