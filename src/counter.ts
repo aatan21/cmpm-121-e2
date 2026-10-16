@@ -21,6 +21,9 @@ type ShieldSnapshot = {
   missingCharge: number;
 };
 
+const shieldEvents = new EventTarget();
+const SHIELD_CHANGED = "shield-changed";
+
 function getShieldSnapshot(): ShieldSnapshot {
   return {
     charge: count,
@@ -62,16 +65,19 @@ function renderStats(snapshot: ShieldSnapshot) {
     `Shield charge: ${snapshot.charge} · Missing charge: ${snapshot.missingCharge}`;
 }
 
+shieldEvents.addEventListener(SHIELD_CHANGED, () => {
+  drawMeter(getShieldSnapshot());
+});
+
 function setCount(next: number) {
   const bounded = Math.max(0, Math.min(shieldCapacity, next));
   if (bounded === count) return;
 
   count = bounded;
 
-  const snapshot = getShieldSnapshot();
-  drawMeter(snapshot);
+  shieldEvents.dispatchEvent(new Event(SHIELD_CHANGED));
 
-  if (panel) updateStats(snapshot);
+  if (panel) updateStats(getShieldSnapshot());
 }
 
 document.querySelector<HTMLButtonElement>("#counter-less")!.onclick = () => {
